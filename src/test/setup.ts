@@ -11,6 +11,7 @@ afterEach(() => {
   cleanup();
   server.resetHandlers();
   vi.unstubAllGlobals();
+  vi.useRealTimers();
 });
 
 afterAll(() => {
