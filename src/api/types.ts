@@ -35,7 +35,7 @@ export interface GeocodingResponse {
   results?: GeocodingResult[];
 }
 
-type NullableNumber = number | null;
+export type NullableNumber = number | null;
 
 export interface CurrentWeather {
   time: string;
