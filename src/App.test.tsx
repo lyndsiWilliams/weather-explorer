@@ -13,7 +13,7 @@ describe("App", () => {
       screen.getByRole("heading", { level: 1, name: "Weather Explorer" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByText("Your weather dashboard is coming together."),
+      screen.getByText("The weather dashboard is coming together."),
     ).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Search city" })).toBeVisible();
   });

@@ -2,6 +2,8 @@
 
 Weather Explorer is a frontend-only weather dashboard built with React, TypeScript, and Vite. Its current scaffold is in place, with live weather and climate views planned.
 
+Unit preferences use Zustand for shared state and are saved in the browser's local storage.
+
 ## Running locally
 
 Requires Node.js 24.15 or newer. The project uses pnpm through Corepack:
