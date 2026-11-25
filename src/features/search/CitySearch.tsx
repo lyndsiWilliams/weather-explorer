@@ -1,5 +1,6 @@
 import {
   useId,
+  useEffect,
   useLayoutEffect,
   useReducer,
   useRef,
@@ -11,13 +12,14 @@ import { useCitySearch } from "./useCitySearch";
 
 interface CitySearchProps {
   onSelect: (city: GeocodingResult) => void;
+  selectedCity?: GeocodingResult | null;
 }
 
 function getCityLabel(city: GeocodingResult): string {
   return [city.name, city.admin1, city.country].filter(Boolean).join(", ");
 }
 
-export function CitySearch({ onSelect }: CitySearchProps) {
+export function CitySearch({ onSelect, selectedCity }: CitySearchProps) {
   const inputId = useId();
   const listboxId = `${inputId}-listbox`;
   const listboxRef = useRef<HTMLUListElement>(null);
@@ -35,6 +37,14 @@ export function CitySearch({ onSelect }: CitySearchProps) {
     showResults && activeIndex >= 0
       ? `${listboxId}-option-${activeIndex}`
       : undefined;
+
+  useEffect(() => {
+    // Browser navigation can change the selected city outside this component.
+    dispatch({
+      type: "selected",
+      label: selectedCity ? getCityLabel(selectedCity) : null,
+    });
+  }, [selectedCity]);
 
   // Adjust the scroll position after rendering but before the browser paints.
   useLayoutEffect(() => {

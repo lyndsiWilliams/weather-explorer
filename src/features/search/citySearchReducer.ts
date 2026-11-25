@@ -10,7 +10,7 @@ type CitySearchAction =
   | { type: "opened" }
   | { type: "closed" }
   | { type: "moveActive"; direction: "next" | "previous"; resultCount: number }
-  | { type: "selected"; label: string };
+  | { type: "selected"; label: string | null };
 
 export const initialState: CitySearchState = {
   term: "",
