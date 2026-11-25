@@ -26,6 +26,7 @@ export interface DailyRow {
 }
 
 export function toHourlyRows(hourly: HourlyForecast): HourlyRow[] {
+  // Open-Meteo returns parallel arrays; group values by timestamp for the UI.
   return hourly.time.map((time, index) => ({
     time,
     temperature: hourly.temperature_2m[index],
@@ -38,6 +39,7 @@ export function toHourlyRows(hourly: HourlyForecast): HourlyRow[] {
 }
 
 export function toDailyRows(daily: DailyForecast): DailyRow[] {
+  // The daily arrays use the same index-based alignment as hourly data.
   return daily.time.map((time, index) => ({
     time,
     weatherCode: daily.weather_code[index],

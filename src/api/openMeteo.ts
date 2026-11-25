@@ -64,6 +64,7 @@ async function requestJson<T>(url: string, signal: AbortSignal): Promise<T> {
     throw new OpenMeteoApiError(response.status, message);
   }
 
+  // The type assertion describes the expected response; it does not validate JSON.
   const data: unknown = await response.json();
   return data as T;
 }
@@ -93,6 +94,7 @@ export function fetchForecast(
     daily: DAILY_VARIABLES.join(","),
     past_days: "30",
     forecast_days: "16",
+    // Return timestamps in the location's timezone rather than the browser's.
     timezone: "auto",
     temperature_unit: request.units.temperature,
     wind_speed_unit: request.units.windSpeed,

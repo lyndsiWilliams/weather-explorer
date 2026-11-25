@@ -26,7 +26,7 @@ export interface GeocodingResult extends LocationCoordinates {
   id: number;
   name: string;
   country?: string;
-  admin1?: string;
+  admin1?: string; // Open-Meteo's first-level administrative region, such as a state.
   timezone?: string;
   population?: number;
 }
@@ -35,6 +35,7 @@ export interface GeocodingResponse {
   results?: GeocodingResult[];
 }
 
+// Weather observations can be unavailable even when the response is successful.
 export type NullableNumber = number | null;
 
 export interface CurrentWeather {
@@ -49,6 +50,7 @@ export interface CurrentWeather {
 }
 
 export interface HourlyForecast {
+  // Values at the same index across these arrays belong to the same timestamp.
   time: string[];
   temperature_2m: NullableNumber[];
   relative_humidity_2m: NullableNumber[];

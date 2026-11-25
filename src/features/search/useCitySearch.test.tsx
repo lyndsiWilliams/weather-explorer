@@ -7,6 +7,7 @@ import { server } from "../../test/server";
 import { useCitySearch } from "./useCitySearch";
 
 function createWrapper() {
+  // Isolate the query cache; the hook's explicit retry policy still applies.
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
@@ -136,6 +137,7 @@ describe("useCitySearch", () => {
         "https://geocoding-api.open-meteo.com/v1/search",
         ({ request }) => {
           requestSignal = request.signal;
+          // Keep the request pending so the test can observe its cancellation.
           return new Promise<Response>(() => {});
         },
       ),
