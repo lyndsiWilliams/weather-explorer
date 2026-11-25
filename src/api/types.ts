@@ -73,6 +73,7 @@ export interface DailyForecast {
 
 export interface ForecastResponse {
   timezone: string;
+  utc_offset_seconds: number;
   current: CurrentWeather;
   hourly: HourlyForecast;
   daily: DailyForecast;

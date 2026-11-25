@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { OpenMeteoApiError, searchCities } from "../../api/openMeteo";
+import { searchCities } from "../../api/openMeteo";
+import { retryDelay, shouldRetryRequest } from "../../api/queryRetry";
 
 const DEBOUNCE_MS = 300;
 
@@ -27,20 +28,8 @@ export function useCitySearch(term: string) {
     queryKey: ["geocode", debouncedTerm],
     queryFn: ({ signal }) => searchCities(debouncedTerm, signal),
     enabled: debouncedTerm.length >= 2,
-    retry: (failureCount, error) => {
-      // Repeating a client error won't fix the request.
-      if (
-        error instanceof OpenMeteoApiError &&
-        error.status >= 400 &&
-        error.status < 500
-      ) {
-        return false;
-      }
-
-      return failureCount < 2;
-    },
-    // Back off between retries rather than immediately repeating a failed request.
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30_000),
+    retry: shouldRetryRequest,
+    retryDelay,
   });
 
   return {

@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { GeocodingResult } from "./api/types";
 import { CitySearch } from "./features/search/CitySearch";
 import { UnitSettings } from "./features/settings/UnitSettings";
+import { TodayWeather } from "./features/weather/TodayWeather";
 
 function App() {
   const [selectedCity, setSelectedCity] = useState<GeocodingResult | null>(
@@ -23,11 +24,7 @@ function App() {
           </div>
         </header>
         <UnitSettings />
-        {selectedCity && (
-          <p className="mt-6 text-sm text-slate-700" role="status">
-            Selected city: {selectedCity.name}
-          </p>
-        )}
+        {selectedCity && <TodayWeather city={selectedCity} />}
       </div>
     </main>
   );

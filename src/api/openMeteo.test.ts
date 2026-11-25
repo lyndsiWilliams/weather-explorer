@@ -70,6 +70,7 @@ describe("fetchForecast", () => {
 
         return HttpResponse.json({
           timezone: "America/New_York",
+          utc_offset_seconds: -14400,
           current: {},
           hourly: {},
           daily: {},
@@ -80,6 +81,7 @@ describe("fetchForecast", () => {
     const result = await fetchForecast(request, signal);
 
     expect(result.timezone).toBe("America/New_York");
+    expect(result.utc_offset_seconds).toBe(-14400);
   });
 
   it("rejects unsuccessful responses with a typed API error", async () => {
