@@ -34,7 +34,6 @@ describe("getWeatherCondition", () => {
   ])("maps code $code to its condition", ({ code, label, icon }) => {
     expect(getWeatherCondition(code)).toEqual({ label, icon });
   });
-
   it.each([null, -1, 100])(
     "returns an unknown condition for unsupported code %s",
     (code) => {

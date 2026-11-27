@@ -35,7 +35,6 @@ describe("toHourlyRows", () => {
       },
     ]);
   });
-
   it("returns no rows when the time array is empty", () => {
     const hourly: HourlyForecast = {
       time: [],
@@ -87,7 +86,6 @@ describe("toDailyRows", () => {
       },
     ]);
   });
-
   it("returns no rows when the time array is empty", () => {
     const daily: DailyForecast = {
       time: [],

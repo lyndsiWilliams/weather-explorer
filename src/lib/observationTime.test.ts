@@ -28,7 +28,6 @@ describe("formatObservationTimes", () => {
       userTime: expectedTime(instant, "Asia/Tokyo"),
     });
   });
-
   it("distinguishes the repeated hour when daylight saving time ends", () => {
     const first = formatObservationTimes(
       "2024-11-03T01:30",
@@ -51,27 +50,31 @@ describe("formatObservationTimes", () => {
     );
     expect(first?.cityTime).not.toBe(second?.cityTime);
   });
-
-  it("reports invalid timestamps, offsets, and timezones", () => {
-    expect(formatObservationTimes("invalid", 0, "UTC", "UTC")).toBeNull();
-    expect(
-      formatObservationTimes("2024-07-12T08:00", NaN, "UTC", "UTC"),
-    ).toBeNull();
-    expect(
-      formatObservationTimes("2024-07-12T08:00", 0, "invalid", "UTC"),
-    ).toBeNull();
-    expect(formatObservationTimes("2024-07-12T08:00", 0, "", "UTC")).toBeNull();
-    expect(formatObservationTimes("2024-07-12T08:00", 0, "UTC", "")).toBeNull();
-  });
-
-  it("does not hide unexpected formatting errors", () => {
-    const format = vi.spyOn(Intl, "DateTimeFormat").mockImplementation(() => {
-      throw new Error("Unexpected formatting failure");
+  describe("error paths", () => {
+    it("reports invalid timestamps, offsets, and timezones", () => {
+      expect(formatObservationTimes("invalid", 0, "UTC", "UTC")).toBeNull();
+      expect(
+        formatObservationTimes("2024-07-12T08:00", NaN, "UTC", "UTC"),
+      ).toBeNull();
+      expect(
+        formatObservationTimes("2024-07-12T08:00", 0, "invalid", "UTC"),
+      ).toBeNull();
+      expect(
+        formatObservationTimes("2024-07-12T08:00", 0, "", "UTC"),
+      ).toBeNull();
+      expect(
+        formatObservationTimes("2024-07-12T08:00", 0, "UTC", ""),
+      ).toBeNull();
     });
+    it("does not hide unexpected formatting errors", () => {
+      const format = vi.spyOn(Intl, "DateTimeFormat").mockImplementation(() => {
+        throw new Error("Unexpected formatting failure");
+      });
 
-    expect(() =>
-      formatObservationTimes("2024-07-12T08:00", 0, "UTC", "UTC"),
-    ).toThrow("Unexpected formatting failure");
-    format.mockRestore();
+      expect(() =>
+        formatObservationTimes("2024-07-12T08:00", 0, "UTC", "UTC"),
+      ).toThrow("Unexpected formatting failure");
+      format.mockRestore();
+    });
   });
 });

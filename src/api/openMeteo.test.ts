@@ -83,39 +83,41 @@ describe("fetchForecast", () => {
     expect(result.timezone).toBe("America/New_York");
     expect(result.utc_offset_seconds).toBe(-14400);
   });
-
-  it("rejects unsuccessful responses with a typed API error", async () => {
-    server.use(
-      http.get("https://api.open-meteo.com/v1/forecast", () =>
-        HttpResponse.json(
-          { error: true, reason: "Invalid request" },
-          { status: 400, statusText: "Bad Request" },
+  describe("error paths", () => {
+    it("rejects unsuccessful responses with a typed API error", async () => {
+      server.use(
+        http.get("https://api.open-meteo.com/v1/forecast", () =>
+          HttpResponse.json(
+            { error: true, reason: "Invalid request" },
+            { status: 400, statusText: "Bad Request" },
+          ),
         ),
-      ),
-    );
+      );
 
-    await expect(
-      fetchForecast({ latitude: 0, longitude: 0, units }, signal),
-    ).rejects.toMatchObject<Partial<OpenMeteoApiError>>({
-      name: "OpenMeteoApiError",
-      status: 400,
-      message: "Bad Request",
+      await expect(
+        fetchForecast({ latitude: 0, longitude: 0, units }, signal),
+      ).rejects.toMatchObject<Partial<OpenMeteoApiError>>({
+        name: "OpenMeteoApiError",
+        status: 400,
+        message: "Bad Request",
+      });
     });
-  });
+    it("uses the status code when an error response has no status text", async () => {
+      vi.stubGlobal(
+        "fetch",
+        vi
+          .fn()
+          .mockResolvedValue(
+            new Response(null, { status: 500, statusText: "" }),
+          ),
+      );
 
-  it("uses the status code when an error response has no status text", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi
-        .fn()
-        .mockResolvedValue(new Response(null, { status: 500, statusText: "" })),
-    );
-
-    await expect(
-      fetchForecast({ latitude: 0, longitude: 0, units }, signal),
-    ).rejects.toMatchObject({
-      status: 500,
-      message: "Request failed with status 500",
+      await expect(
+        fetchForecast({ latitude: 0, longitude: 0, units }, signal),
+      ).rejects.toMatchObject({
+        status: 500,
+        message: "Request failed with status 500",
+      });
     });
   });
 });

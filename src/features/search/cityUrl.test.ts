@@ -21,7 +21,6 @@ describe("city URL", () => {
     expect(url.hash).toBe("#weather");
     expect(original.searchParams.has("city")).toBe(false);
   });
-
   it("removes old optional fields when the next city doesn't have them", () => {
     const first = urlWithCity(new URL("https://example.com/"), city);
     const nextCity: GeocodingResult = {
@@ -36,7 +35,6 @@ describe("city URL", () => {
     expect(next.searchParams.has("country")).toBe(false);
     expect(readCityFromUrl(next)).toEqual({ city: nextCity, error: null });
   });
-
   it("treats a URL without city parameters as an empty selection", () => {
     expect(readCityFromUrl(new URL("https://example.com/?view=today"))).toEqual(
       {
@@ -45,7 +43,6 @@ describe("city URL", () => {
       },
     );
   });
-
   it.each([
     ["partial location", "?city=Boston"],
     [

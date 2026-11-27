@@ -17,7 +17,6 @@ describe("unit settings", () => {
     vi.restoreAllMocks();
     localStorage.clear();
   });
-
   it("updates the shared units and restores the choice from storage", () => {
     render(<UnitSettings />);
 
@@ -40,51 +39,50 @@ describe("unit settings", () => {
     });
     expect(createUnitSettingsStore().getState().unitSystem).toBe("imperial");
   });
+  describe("storage error paths", () => {
+    it("warns about invalid saved preferences rather than trusting them", () => {
+      localStorage.setItem("weather-explorer-units", "invalid");
+      const logError = vi.spyOn(console, "error").mockImplementation(() => {});
 
-  it("warns about invalid saved preferences rather than trusting them", () => {
-    localStorage.setItem("weather-explorer-units", "invalid");
-    const logError = vi.spyOn(console, "error").mockImplementation(() => {});
+      const store = createUnitSettingsStore();
 
-    const store = createUnitSettingsStore();
-
-    expect(store.getState().unitSystem).toBe("imperial");
-    expect(store.getState().storageError).not.toBeNull();
-    expect(logError).toHaveBeenCalled();
-  });
-
-  it("reports storage read failures and remains usable", () => {
-    const logError = vi.spyOn(console, "error").mockImplementation(() => {});
-    vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
-      throw new Error("Storage unavailable");
+      expect(store.getState().unitSystem).toBe("imperial");
+      expect(store.getState().storageError).not.toBeNull();
+      expect(logError).toHaveBeenCalled();
     });
-
-    const store = createUnitSettingsStore();
-
-    expect(store.getState().unitSystem).toBe("imperial");
-    expect(store.getState().storageError).not.toBeNull();
-    expect(logError).toHaveBeenCalled();
-  });
-
-  it("reports save failures while keeping the selection, and clears the warning on recovery", () => {
-    const logError = vi.spyOn(console, "error").mockImplementation(() => {});
-    const save = vi
-      .spyOn(Storage.prototype, "setItem")
-      .mockImplementation(() => {
+    it("reports storage read failures and remains usable", () => {
+      const logError = vi.spyOn(console, "error").mockImplementation(() => {});
+      vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
         throw new Error("Storage unavailable");
       });
-    render(<UnitSettings />);
 
-    fireEvent.click(screen.getByRole("radio", { name: /metric/i }));
+      const store = createUnitSettingsStore();
 
-    expect(screen.getByRole("radio", { name: /metric/i })).toBeChecked();
-    expect(screen.getByRole("alert")).toHaveTextContent(
-      "Unit preferences could not be saved or restored.",
-    );
-    expect(logError).toHaveBeenCalled();
+      expect(store.getState().unitSystem).toBe("imperial");
+      expect(store.getState().storageError).not.toBeNull();
+      expect(logError).toHaveBeenCalled();
+    });
+    it("reports save failures while keeping the selection, and clears the warning on recovery", () => {
+      const logError = vi.spyOn(console, "error").mockImplementation(() => {});
+      const save = vi
+        .spyOn(Storage.prototype, "setItem")
+        .mockImplementation(() => {
+          throw new Error("Storage unavailable");
+        });
+      render(<UnitSettings />);
 
-    save.mockRestore();
-    fireEvent.click(screen.getByRole("radio", { name: /imperial/i }));
-    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
-    expect(createUnitSettingsStore().getState().unitSystem).toBe("imperial");
+      fireEvent.click(screen.getByRole("radio", { name: /metric/i }));
+
+      expect(screen.getByRole("radio", { name: /metric/i })).toBeChecked();
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        "Unit preferences could not be saved or restored.",
+      );
+      expect(logError).toHaveBeenCalled();
+
+      save.mockRestore();
+      fireEvent.click(screen.getByRole("radio", { name: /imperial/i }));
+      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+      expect(createUnitSettingsStore().getState().unitSystem).toBe("imperial");
+    });
   });
 });

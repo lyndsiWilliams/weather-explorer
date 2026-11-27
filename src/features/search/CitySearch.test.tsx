@@ -26,186 +26,183 @@ const cities: GeocodingResult[] = [
 ];
 
 describe("CitySearch", () => {
-  it("renders a labeled combobox", () => {
-    render(<CitySearch onSelect={vi.fn()} />, {
-      wrapper: createQueryWrapper(),
+  describe("search and navigation", () => {
+    it("renders a labeled combobox", () => {
+      render(<CitySearch onSelect={vi.fn()} />, {
+        wrapper: createQueryWrapper(),
+      });
+
+      expect(
+        screen.getByRole("combobox", { name: "Search city" }),
+      ).toHaveAttribute("aria-autocomplete", "list");
+      expect(
+        screen.getByRole("combobox", { name: "Search city" }),
+      ).toHaveAttribute("aria-expanded", "false");
     });
-
-    expect(
-      screen.getByRole("combobox", { name: "Search city" }),
-    ).toHaveAttribute("aria-autocomplete", "list");
-    expect(
-      screen.getByRole("combobox", { name: "Search city" }),
-    ).toHaveAttribute("aria-expanded", "false");
-  });
-
-  it("supports arrow-key navigation and selecting a result with Enter", async () => {
-    const onSelect = vi.fn();
-    server.use(
-      http.get("https://geocoding-api.open-meteo.com/v1/search", () =>
-        HttpResponse.json({ results: cities }),
-      ),
-    );
-
-    render(<CitySearch onSelect={onSelect} />, {
-      wrapper: createQueryWrapper(),
-    });
-
-    const input = screen.getByRole("combobox", { name: "Search city" });
-    input.focus();
-    fireEvent.change(input, { target: { value: "Springfield" } });
-
-    const options = await screen.findAllByRole("option");
-    expect(options).toHaveLength(2);
-
-    fireEvent.keyDown(input, { key: "Enter" });
-    expect(onSelect).not.toHaveBeenCalled();
-
-    fireEvent.keyDown(input, { key: "ArrowDown" });
-    expect(options[0]).toHaveAttribute("aria-selected", "true");
-    expect(input).toHaveAttribute("aria-activedescendant", options[0]?.id);
-
-    fireEvent.keyDown(input, { key: "ArrowDown" });
-    expect(options[1]).toHaveAttribute("aria-selected", "true");
-
-    fireEvent.keyDown(input, { key: "ArrowUp" });
-    expect(options[0]).toHaveAttribute("aria-selected", "true");
-
-    fireEvent.keyDown(input, { key: "ArrowUp" });
-    expect(options[1]).toHaveAttribute("aria-selected", "true");
-
-    fireEvent.keyDown(input, { key: "ArrowDown" });
-    expect(options[0]).toHaveAttribute("aria-selected", "true");
-
-    fireEvent.keyDown(input, { key: "Enter" });
-
-    expect(onSelect).toHaveBeenCalledWith(cities[0]);
-    expect(input).toHaveValue("Springfield, Illinois, United States");
-    expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
-  });
-
-  it("selects a result with a pointer click", async () => {
-    const onSelect = vi.fn();
-    server.use(
-      http.get("https://geocoding-api.open-meteo.com/v1/search", () =>
-        HttpResponse.json({ results: cities }),
-      ),
-    );
-
-    render(<CitySearch onSelect={onSelect} />, {
-      wrapper: createQueryWrapper(),
-    });
-
-    fireEvent.change(screen.getByRole("combobox", { name: "Search city" }), {
-      target: { value: "Springfield" },
-    });
-
-    const option = await screen.findByRole("option", {
-      name: "Springfield, Illinois, United States",
-    });
-    fireEvent.mouseDown(option);
-    fireEvent.click(option);
-
-    expect(onSelect).toHaveBeenCalledWith(cities[0]);
-  });
-
-  it("keeps the active option visible when navigating a scrollable list", async () => {
-    const results = [
-      ...cities,
-      ...cities.map((city) => ({ ...city, id: city.id + 2 })),
-    ];
-    server.use(
-      http.get("https://geocoding-api.open-meteo.com/v1/search", () =>
-        HttpResponse.json({ results }),
-      ),
-    );
-
-    render(<CitySearch onSelect={vi.fn()} />, {
-      wrapper: createQueryWrapper(),
-    });
-
-    const input = screen.getByRole("combobox", { name: "Search city" });
-    fireEvent.change(input, { target: { value: "Springfield" } });
-    const options = await screen.findAllByRole("option");
-    const listbox = screen.getByRole("listbox");
-
-    // JSDOM has no layout, so model option positions relative to the scroll offset.
-    Object.defineProperty(listbox, "clientHeight", { value: 80 });
-    vi.spyOn(listbox, "getBoundingClientRect").mockReturnValue(
-      new DOMRect(0, 0, 200, 80),
-    );
-    options.forEach((option, index) => {
-      vi.spyOn(option, "getBoundingClientRect").mockImplementation(
-        () => new DOMRect(0, index * 40 - listbox.scrollTop, 200, 40),
+    it("supports arrow-key navigation and selecting a result with Enter", async () => {
+      const onSelect = vi.fn();
+      server.use(
+        http.get("https://geocoding-api.open-meteo.com/v1/search", () =>
+          HttpResponse.json({ results: cities }),
+        ),
       );
+
+      render(<CitySearch onSelect={onSelect} />, {
+        wrapper: createQueryWrapper(),
+      });
+
+      const input = screen.getByRole("combobox", { name: "Search city" });
+      input.focus();
+      fireEvent.change(input, { target: { value: "Springfield" } });
+
+      const options = await screen.findAllByRole("option");
+      expect(options).toHaveLength(2);
+
+      fireEvent.keyDown(input, { key: "Enter" });
+      expect(onSelect).not.toHaveBeenCalled();
+
+      fireEvent.keyDown(input, { key: "ArrowDown" });
+      expect(options[0]).toHaveAttribute("aria-selected", "true");
+      expect(input).toHaveAttribute("aria-activedescendant", options[0]?.id);
+
+      fireEvent.keyDown(input, { key: "ArrowDown" });
+      expect(options[1]).toHaveAttribute("aria-selected", "true");
+
+      fireEvent.keyDown(input, { key: "ArrowUp" });
+      expect(options[0]).toHaveAttribute("aria-selected", "true");
+
+      fireEvent.keyDown(input, { key: "ArrowUp" });
+      expect(options[1]).toHaveAttribute("aria-selected", "true");
+
+      fireEvent.keyDown(input, { key: "ArrowDown" });
+      expect(options[0]).toHaveAttribute("aria-selected", "true");
+
+      fireEvent.keyDown(input, { key: "Enter" });
+
+      expect(onSelect).toHaveBeenCalledWith(cities[0]);
+      expect(input).toHaveValue("Springfield, Illinois, United States");
+      expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
     });
+    it("selects a result with a pointer click", async () => {
+      const onSelect = vi.fn();
+      server.use(
+        http.get("https://geocoding-api.open-meteo.com/v1/search", () =>
+          HttpResponse.json({ results: cities }),
+        ),
+      );
 
-    fireEvent.keyDown(input, { key: "ArrowDown" });
-    expect(listbox.scrollTop).toBe(0);
-    fireEvent.keyDown(input, { key: "ArrowDown" });
-    fireEvent.keyDown(input, { key: "ArrowDown" });
-    expect(options[2]).toHaveAttribute("aria-selected", "true");
-    expect(listbox.scrollTop).toBe(40);
+      render(<CitySearch onSelect={onSelect} />, {
+        wrapper: createQueryWrapper(),
+      });
 
-    fireEvent.keyDown(input, { key: "ArrowUp" });
-    fireEvent.keyDown(input, { key: "ArrowUp" });
-    expect(listbox.scrollTop).toBe(0);
+      fireEvent.change(screen.getByRole("combobox", { name: "Search city" }), {
+        target: { value: "Springfield" },
+      });
 
-    fireEvent.keyDown(input, { key: "ArrowUp" });
-    expect(options[3]).toHaveAttribute("aria-selected", "true");
-    expect(listbox.scrollTop).toBe(80);
-    fireEvent.keyDown(input, { key: "ArrowDown" });
-    expect(options[0]).toHaveAttribute("aria-selected", "true");
-    expect(listbox.scrollTop).toBe(0);
-  });
+      const option = await screen.findByRole("option", {
+        name: "Springfield, Illinois, United States",
+      });
+      fireEvent.mouseDown(option);
+      fireEvent.click(option);
 
-  it("shows a no-results status and closes it with Escape", async () => {
-    server.use(
-      http.get("https://geocoding-api.open-meteo.com/v1/search", () =>
-        HttpResponse.json({}),
-      ),
-    );
-
-    render(<CitySearch onSelect={vi.fn()} />, {
-      wrapper: createQueryWrapper(),
+      expect(onSelect).toHaveBeenCalledWith(cities[0]);
     });
+    it("keeps the active option visible when navigating a scrollable list", async () => {
+      const results = [
+        ...cities,
+        ...cities.map((city) => ({ ...city, id: city.id + 2 })),
+      ];
+      server.use(
+        http.get("https://geocoding-api.open-meteo.com/v1/search", () =>
+          HttpResponse.json({ results }),
+        ),
+      );
 
-    const input = screen.getByRole("combobox", { name: "Search city" });
-    input.focus();
-    fireEvent.change(input, { target: { value: "Nowhere" } });
+      render(<CitySearch onSelect={vi.fn()} />, {
+        wrapper: createQueryWrapper(),
+      });
 
-    expect(await screen.findByText("No cities found.")).toBeInTheDocument();
+      const input = screen.getByRole("combobox", { name: "Search city" });
+      fireEvent.change(input, { target: { value: "Springfield" } });
+      const options = await screen.findAllByRole("option");
+      const listbox = screen.getByRole("listbox");
 
-    fireEvent.keyDown(input, { key: "Escape" });
+      // JSDOM has no layout, so model option positions relative to the scroll offset.
+      Object.defineProperty(listbox, "clientHeight", { value: 80 });
+      vi.spyOn(listbox, "getBoundingClientRect").mockReturnValue(
+        new DOMRect(0, 0, 200, 80),
+      );
+      options.forEach((option, index) => {
+        vi.spyOn(option, "getBoundingClientRect").mockImplementation(
+          () => new DOMRect(0, index * 40 - listbox.scrollTop, 200, 40),
+        );
+      });
 
-    await waitFor(() => {
-      expect(input).toHaveAttribute("aria-expanded", "false");
+      fireEvent.keyDown(input, { key: "ArrowDown" });
+      expect(listbox.scrollTop).toBe(0);
+      fireEvent.keyDown(input, { key: "ArrowDown" });
+      fireEvent.keyDown(input, { key: "ArrowDown" });
+      expect(options[2]).toHaveAttribute("aria-selected", "true");
+      expect(listbox.scrollTop).toBe(40);
+
+      fireEvent.keyDown(input, { key: "ArrowUp" });
+      fireEvent.keyDown(input, { key: "ArrowUp" });
+      expect(listbox.scrollTop).toBe(0);
+
+      fireEvent.keyDown(input, { key: "ArrowUp" });
+      expect(options[3]).toHaveAttribute("aria-selected", "true");
+      expect(listbox.scrollTop).toBe(80);
+      fireEvent.keyDown(input, { key: "ArrowDown" });
+      expect(options[0]).toHaveAttribute("aria-selected", "true");
+      expect(listbox.scrollTop).toBe(0);
     });
-    expect(screen.queryByText("No cities found.")).not.toBeInTheDocument();
-  });
+    it("shows a no-results status and closes it with Escape", async () => {
+      server.use(
+        http.get("https://geocoding-api.open-meteo.com/v1/search", () =>
+          HttpResponse.json({}),
+        ),
+      );
 
-  it("closes the popup when focus leaves the combobox", async () => {
-    server.use(
-      http.get("https://geocoding-api.open-meteo.com/v1/search", () =>
-        HttpResponse.json({}),
-      ),
-    );
+      render(<CitySearch onSelect={vi.fn()} />, {
+        wrapper: createQueryWrapper(),
+      });
 
-    render(<CitySearch onSelect={vi.fn()} />, {
-      wrapper: createQueryWrapper(),
+      const input = screen.getByRole("combobox", { name: "Search city" });
+      input.focus();
+      fireEvent.change(input, { target: { value: "Nowhere" } });
+
+      expect(await screen.findByText("No cities found.")).toBeInTheDocument();
+
+      fireEvent.keyDown(input, { key: "Escape" });
+
+      await waitFor(() => {
+        expect(input).toHaveAttribute("aria-expanded", "false");
+      });
+      expect(screen.queryByText("No cities found.")).not.toBeInTheDocument();
     });
+    it("closes the popup when focus leaves the combobox", async () => {
+      server.use(
+        http.get("https://geocoding-api.open-meteo.com/v1/search", () =>
+          HttpResponse.json({}),
+        ),
+      );
 
-    const input = screen.getByRole("combobox", { name: "Search city" });
-    input.focus();
-    fireEvent.change(input, { target: { value: "Nowhere" } });
-    expect(await screen.findByText("No cities found.")).toBeInTheDocument();
+      render(<CitySearch onSelect={vi.fn()} />, {
+        wrapper: createQueryWrapper(),
+      });
 
-    fireEvent.blur(input);
+      const input = screen.getByRole("combobox", { name: "Search city" });
+      input.focus();
+      fireEvent.change(input, { target: { value: "Nowhere" } });
+      expect(await screen.findByText("No cities found.")).toBeInTheDocument();
 
-    await waitFor(() => {
-      expect(input).toHaveAttribute("aria-expanded", "false");
+      fireEvent.blur(input);
+
+      await waitFor(() => {
+        expect(input).toHaveAttribute("aria-expanded", "false");
+      });
+      expect(screen.queryByText("No cities found.")).not.toBeInTheDocument();
     });
-    expect(screen.queryByText("No cities found.")).not.toBeInTheDocument();
   });
 
   it("shows an error and retries when requested", async () => {

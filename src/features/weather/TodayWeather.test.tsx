@@ -56,7 +56,6 @@ describe("TodayWeather", () => {
     localStorage.clear();
     useUnitSettings.setState({ unitSystem: "imperial", storageError: null });
   });
-
   it("requests and displays the selected city's weather in the chosen units", async () => {
     const requests: URL[] = [];
     server.use(
@@ -134,7 +133,6 @@ describe("TodayWeather", () => {
       screen.getByRole("heading", { name: /current weather in london/i }),
     ).toBeInTheDocument();
   });
-
   it("shows unavailable measurements and unknown conditions", async () => {
     server.use(
       http.get("https://api.open-meteo.com/v1/forecast", () =>
@@ -157,7 +155,6 @@ describe("TodayWeather", () => {
     expect(await screen.findByText("Unknown conditions")).toBeInTheDocument();
     expect(screen.getAllByText("Unavailable")).toHaveLength(5);
   });
-
   it("reports when the observation time cannot be displayed", async () => {
     server.use(
       http.get("https://api.open-meteo.com/v1/forecast", () =>
@@ -170,7 +167,43 @@ describe("TodayWeather", () => {
       await screen.findByText("Observation time unavailable."),
     ).toBeVisible();
   });
+  it("updates the daily forecast along with current weather when units change", async () => {
+    let requestCount = 0;
+    server.use(
+      http.get("https://api.open-meteo.com/v1/forecast", ({ request }) => {
+        requestCount += 1;
+        const metric =
+          new URL(request.url).searchParams.get("temperature_unit") ===
+          "celsius";
+        return HttpResponse.json({
+          ...forecast,
+          daily: {
+            time: ["2024-07-12"],
+            weather_code: [61],
+            temperature_2m_max: [metric ? 24 : 75],
+            temperature_2m_min: [metric ? 15 : 59],
+            precipitation_sum: [0],
+            precipitation_probability_max: [40],
+            sunrise: [""],
+            sunset: [""],
+          },
+        });
+      }),
+    );
+    render(
+      <>
+        <UnitSettings />
+        <TodayWeather city={city} />
+      </>,
+      { wrapper: createQueryWrapper() },
+    );
 
+    expect(await screen.findByText("75 °F")).toBeVisible();
+    expect(requestCount).toBe(1);
+    fireEvent.click(screen.getByRole("radio", { name: /metric/i }));
+    expect(await screen.findByText("24 °C")).toBeVisible();
+    expect(requestCount).toBe(2);
+  });
   it("shows a request error and lets the user retry", async () => {
     let requestCount = 0;
     server.use(
