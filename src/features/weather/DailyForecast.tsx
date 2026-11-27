@@ -1,23 +1,11 @@
-import type {
-  ForecastResponse,
-  NullableNumber,
-  TemperatureUnit,
-} from "../../api/types";
+import type { ForecastResponse, TemperatureUnit } from "../../api/types";
 import { getWeatherCondition } from "../../api/weatherCodes";
 import { toDailyRows } from "../../lib/transform";
+import { formatWeatherValue } from "./formatWeatherValue";
 
 interface DailyForecastProps {
   forecast: ForecastResponse;
   temperatureUnit: TemperatureUnit;
-}
-
-function formatTemperature(
-  value: NullableNumber,
-  unit: TemperatureUnit,
-): string {
-  return value === null
-    ? "Unavailable"
-    : `${value} ${unit === "fahrenheit" ? "°F" : "°C"}`;
 }
 
 export function DailyForecast({
@@ -73,10 +61,16 @@ export function DailyForecast({
                     {getWeatherCondition(day.weatherCode).label}
                   </td>
                   <td className="px-2 py-2">
-                    {formatTemperature(day.high, temperatureUnit)}
+                    {formatWeatherValue(
+                      day.high,
+                      temperatureUnit === "fahrenheit" ? "°F" : "°C",
+                    )}
                   </td>
                   <td className="px-2 py-2">
-                    {formatTemperature(day.low, temperatureUnit)}
+                    {formatWeatherValue(
+                      day.low,
+                      temperatureUnit === "fahrenheit" ? "°F" : "°C",
+                    )}
                   </td>
                   <td className="px-2 py-2">
                     {day.precipitationProbability === null

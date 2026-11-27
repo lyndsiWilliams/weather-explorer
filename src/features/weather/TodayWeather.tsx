@@ -1,18 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchForecast } from "../../api/openMeteo";
 import { retryDelay, shouldRetryRequest } from "../../api/queryRetry";
-import type { GeocodingResult, NullableNumber } from "../../api/types";
+import type { GeocodingResult } from "../../api/types";
 import { getWeatherCondition } from "../../api/weatherCodes";
 import { formatObservationTimes } from "../../lib/observationTime";
 import { unitSystems, useUnitSettings } from "../settings/unitSettingsStore";
 import { DailyForecast } from "./DailyForecast";
+import { formatWeatherValue } from "./formatWeatherValue";
+import { PastWeather } from "./PastWeather";
 
 interface TodayWeatherProps {
   city: GeocodingResult;
-}
-
-function formatValue(value: NullableNumber, unit: string): string {
-  return value === null ? "Unavailable" : `${value} ${unit}`;
 }
 
 export function TodayWeather({ city }: TodayWeatherProps) {
@@ -82,7 +80,7 @@ export function TodayWeather({ city }: TodayWeatherProps) {
               <div>
                 <dt className="text-sm text-slate-600">Temperature</dt>
                 <dd className="font-semibold">
-                  {formatValue(
+                  {formatWeatherValue(
                     data.current.temperature_2m,
                     unitSystem === "imperial" ? "°F" : "°C",
                   )}
@@ -91,7 +89,7 @@ export function TodayWeather({ city }: TodayWeatherProps) {
               <div>
                 <dt className="text-sm text-slate-600">Feels like</dt>
                 <dd className="font-semibold">
-                  {formatValue(
+                  {formatWeatherValue(
                     data.current.apparent_temperature,
                     unitSystem === "imperial" ? "°F" : "°C",
                   )}
@@ -100,13 +98,13 @@ export function TodayWeather({ city }: TodayWeatherProps) {
               <div>
                 <dt className="text-sm text-slate-600">Humidity</dt>
                 <dd className="font-semibold">
-                  {formatValue(data.current.relative_humidity_2m, "%")}
+                  {formatWeatherValue(data.current.relative_humidity_2m, "%")}
                 </dd>
               </div>
               <div>
                 <dt className="text-sm text-slate-600">Wind speed</dt>
                 <dd className="font-semibold">
-                  {formatValue(
+                  {formatWeatherValue(
                     data.current.wind_speed_10m,
                     unitSystem === "imperial" ? "mph" : "km/h",
                   )}
@@ -115,7 +113,7 @@ export function TodayWeather({ city }: TodayWeatherProps) {
               <div>
                 <dt className="text-sm text-slate-600">Precipitation</dt>
                 <dd className="font-semibold">
-                  {formatValue(
+                  {formatWeatherValue(
                     data.current.precipitation,
                     unitSystem === "imperial" ? "in" : "mm",
                   )}
@@ -136,7 +134,10 @@ export function TodayWeather({ city }: TodayWeatherProps) {
         )}
       </section>
       {!isPending && !isError && (
-        <DailyForecast forecast={data} temperatureUnit={units.temperature} />
+        <>
+          <DailyForecast forecast={data} temperatureUnit={units.temperature} />
+          <PastWeather forecast={data} units={units} />
+        </>
       )}
     </>
   );

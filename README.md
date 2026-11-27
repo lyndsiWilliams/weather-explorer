@@ -1,6 +1,6 @@
 # Weather Explorer
 
-Weather Explorer is a frontend-only weather dashboard built with React, TypeScript, and Vite. Search for a city to see its current weather and daily forecast; climate views are planned.
+Weather Explorer is a frontend-only weather dashboard built with React, TypeScript, and Vite. Search for a city to see current weather, a daily forecast, and the past 30 days of historical forecast data; climate views are planned.
 
 Unit preferences use Zustand for shared state and are saved in the browser's local storage.
 The selected city is stored in the URL, so you can share a link or return to it later.

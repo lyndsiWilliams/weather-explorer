@@ -188,6 +188,49 @@ describe("TodayWeather", () => {
             sunset: [""],
           },
         });
+        it("updates past weather in the same request when units change", async () => {
+          let requestCount = 0;
+          server.use(
+            http.get(
+              "https://api.open-meteo.com/v1/forecast",
+              ({ request }) => {
+                requestCount += 1;
+                const metric =
+                  new URL(request.url).searchParams.get("temperature_unit") ===
+                  "celsius";
+                return HttpResponse.json({
+                  ...forecast,
+                  daily: {
+                    time: ["2024-07-11"],
+                    weather_code: [61],
+                    temperature_2m_max: [metric ? 24 : 75],
+                    temperature_2m_min: [metric ? 15 : 59],
+                    precipitation_sum: [metric ? 2.5 : 0.1],
+                    precipitation_probability_max: [null],
+                    sunrise: [""],
+                    sunset: [""],
+                  },
+                });
+              },
+            ),
+          );
+          render(
+            <>
+              <UnitSettings />
+              <TodayWeather city={city} />
+            </>,
+            { wrapper: createQueryWrapper() },
+          );
+
+          fireEvent.click(await screen.findByText("Show past daily weather"));
+          expect(screen.getByText("75 °F")).toBeVisible();
+          expect(requestCount).toBe(1);
+          fireEvent.click(screen.getByRole("radio", { name: /metric/i }));
+          fireEvent.click(await screen.findByText("Show past daily weather"));
+          expect(screen.getByText("24 °C")).toBeVisible();
+          expect(screen.getByText("2.5 mm")).toBeVisible();
+          expect(requestCount).toBe(2);
+        });
       }),
     );
     render(
